@@ -1,0 +1,18 @@
+<footer>
+  <div>
+    <span style="font-size: 1.0rem;">
+      <a href="mailto:{{ site.author.email  }}">{{ site.author.email  }}</a>
+    </span>
+    <span>
+      &nbsp;
+    </span>
+    <span>
+      {%- include social.html -%}
+    </span>
+  </div>
+  <div>
+     <span>
+         &copy; <time datetime="{{ site.time  }}">{{ site.time | date: '%Y'  }}</time> Made with Jekyll using the <a href="https://github.com/chesterhow/tale/">Tale</a> theme.
+    </span>
+  </div>
+</footer>
