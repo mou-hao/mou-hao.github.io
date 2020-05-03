@@ -1,0 +1,47 @@
+<nav class="nav">
+  <div class="nav-container">
+    <a href="{{ site.baseurl }}/">
+      <h2 class="nav-title">{{ site.title }}</h2>
+    </a>
+    <ul>
+      <li><a href="{{ '/about' | prepend: site.baseurl }}">About</a></li>
+      <li><a href="{{ site.baseurl }}/">Posts</a></li>
+	  <li>
+  		<form action="/search.html" method="get">
+    	  <input type="search" placeholder="Search" id="search-box" name="query">
+		</form>
+      <li>
+    </ul>
+  </div>
+</nav>
+
+<style>
+#search-box {
+  background: url('/assets/icons8-search.svg') no-repeat;
+  background-position: 4px 2px;
+  background-size: 14px 14px;
+  box-sizing: border-box;
+  border: 2px solid;
+  border-color: #fff;
+  border-radius: 40px;
+  -webkit-transition: width 0.4s ease-in-out;
+  transition: width 0.4s ease-in-out;
+  width: 22px;
+  height: 22px;
+  padding: 0px 0px 0px 22px;
+}
+#search-box:focus {
+  border-color: #ccc;
+  width: 130px;
+  outline: none;
+}
+input::-webkit-search-cancel-button {
+  margin: 0px 2px 0px 0px;
+}
+input::-webkit-search-decoration {
+  display: none;
+}
+input:-webkit-autofill {
+  -webkit-box-shadow: none important!;
+}
+</style>
