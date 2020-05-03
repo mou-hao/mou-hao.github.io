@@ -5,7 +5,7 @@
 
     searchTermSpan.innerHTML = 'Search results for \'' + searchTerm + '\':'
 
-    if (results.length) { // Are there any results?
+    if (results && results.length) { // Are there any results?
       var appendString = '';
 
       for (var i = 0; i < results.length; i++) {  // Iterate over the results
@@ -46,19 +46,19 @@
       this.field('author');
       this.field('category');
       this.field('content');
+
+      Object.keys(window.store).forEach(function(key) {
+        this.add({
+          'id': key,
+          'title': window.store[key].title,
+          'author': window.store[key].author,
+          'category': window.store[key].category,
+          'content': window.store[key].content
+        });
+      }, this);
     });
 
-    for (var key in window.store) { // Add the data to lunr
-      idx.add({
-        'id': key,
-        'title': window.store[key].title,
-        'author': window.store[key].author,
-        'category': window.store[key].category,
-        'content': window.store[key].content
-      });
-
-      var results = idx.search(searchTerm); // Get lunr to perform a search
-      displaySearchResults(results, window.store, searchTerm);
-    }
+    var results = idx.search(searchTerm); // Get lunr to perform a search
   }
+  displaySearchResults(results, window.store, searchTerm);
 })();
