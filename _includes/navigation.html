@@ -8,7 +8,8 @@
       <li><a href="{{ site.baseurl }}/">Posts</a></li>
       <li>
         <form action="/search.html" method="get">
-          <input type="search" placeholder="Search" id="search-box" name="query">
+          <input type="search" placeholder="Search" id="search-box" 
+	   name="query" autocomplete="off"/>
         </form>
       <li>
     </ul>
@@ -36,6 +37,8 @@
   width: 130px;
   outline: none;
 }
+input::-webkit-search-results-decoration,
+input::-webkit-search-results-button,
 input::-webkit-search-cancel-button,
 input::-webkit-search-decoration {
   display: none;
