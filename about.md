@@ -11,6 +11,6 @@ degree from the University of Chicago in 2018.
 After college, I came back to Shanghai and have since been living and working
 here. 
 
-I am now doing an Master's program offered by UIUC and am expected to graduate
+I am now doing a Master's program offered by UIUC and am expected to graduate
 in Spring 2023. 
 I am still working full-time, and I currently work for Morgan Stanley.
