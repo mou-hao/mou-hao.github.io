@@ -163,16 +163,209 @@ You can use alpha times one of the terms to control the relative weights of the 
 
 ### Project 3: Gradient Domain Fusion <a name="project-3:-gradient-domain-fusion"></a>
 
-(Todo)
+The third project is about gradient domain processing.
+The goal of the first two parts is to blend an object from a source image into a target image
+and try to make the result image look natural.
+The thrid part is about preserving the "color gradient" when converting a color image into
+grayscale.
+
+#### Poisson Blending
+
+The intuition of this technique is to keep the gradient of the object from the source image
+while ignoring the overall intensity.
+In many cases, this will yield very good results because we usually care more about the gradient
+than the intensity (color).
+A hat is a hat, be it brown or black.
+
+<img src="/assets/images/2021-06-06/poisson_copy_paste.png"/>
+<img src="/assets/images/2021-06-06/poisson_result.png" width=500/>
+
+<p style="text-align:center;">
+(
+<a href="https://commons.wikimedia.org/wiki/File:The_Red_moon.jpg">Picture of the moon</a>
+by Giudymariapia.
+)
+</p>
+
+But there are also times when color does matter. Poisson blending doesn't always work.
+
+<img src="/assets/images/2021-06-06/poisson_failed.png" width=600/>
+
+<p style="text-align:center;">
+(
+<a href="https://commons.wikimedia.org/wiki/File:Libellulidae_Brachythemis_contaminata_on_Nelumbo_nucifera_leaf_with_water_drops%2C_in_a_pond.jpg">
+Picture of a lotus leaf
+</a> by Basile Morin.
+)
+</p>
+
+#### Mixed Gradient
+
+The part of the image where the gradient is stronger usually contains information that are more 
+interesting to us, so instead of always perserving the gradient of the object from the source
+image, we could preserve the stronger gradient of either the source image or the target image for 
+each neighborhood.
+
+<img src="/assets/images/2021-06-06/mixed_copy_paste.png"/>
+<img src="/assets/images/2021-06-06/mixed_result.png" width=600/>
+
+<p style="text-align:center;">
+(
+<a href="https://commons.wikimedia.org/wiki/File:Surfaces_vertical_brick_wall_closeup_view.JPG">
+Picture of a brick wall
+</a>
+by Tomwsulcer.
+)
+</p>
+
+Native poisson blending would not preserve the brick texture in the area around the text.
+
+#### Color2Gray
+
+Color2Gray usually only retains information about the intensity but not the color difference, 
+so if we convert an image used for color blind screening to grayscale,
+the number in the image will become invisible.
+
+To solve this, we could do some gradient domain processing and encode information about the
+color difference in some "color gradient".
+In this case, I used  the highest intensity difference (one that has the highest absolute value)
+of the three color channels to compute the gradient.
+
+<div style="text-align:center">
+  <div style="display:inline-block;">
+    <img src="/assets/images/2021-06-06/colorBlind8.png"/>
+  </div>
+  <div style="display:inline-block;">
+    <img src="/assets/images/2021-06-06/colorBlind8_gray.png"/>
+  </div>
+</div>
+<img src="/assets/images/2021-06-06/colorBlind8_result.png"/>
+
+[Back to ToC](#toc)
 
 ### Project 4: Image Based Lighting <a name="project-4:-image-based-lighting"></a>
 
-(Todo)
+The goal of this project is to insert some 3D objects into a real world scene and
+render the image to make everything look natural.
+We can easily tell something is off if the inserted 3D objects do not have the right shadow
+or the right reflections,
+so to make things look natural, we will also need to obtain lighting information of the scene.
+
+#### Data Collection and Recovering HDR Radiance Map from SDR Images
+
+To collect lighting information, we use a mirror ball and take photos of it.
+A mirror ball can actually reflect light from almost all angles to the camera.
+We only lose lighting information about the part of the scene that is directly occluded by
+the ball.
+
+Another problem of getting lighting information from photos is that in SDR photos,
+the brightest part cannot be more than 255 times brighter than the darkest part,
+but in the real world, the brightest part can be thousands of times brighter than the darker parts.
+When you take a photo, the camera has to make a choice and clip some bright spots and dark spots.
+To recover the real-world radiance from one SDR photo is guess work,
+but we can take multiple SDR photo of the same scene using same settings but different
+exposure and calculate the HDR radiance map from these SDR photos.
+
+<img src="/assets/images/2021-06-06/sdr_photos.png"/>
+<img src="/assets/images/2021-06-06/recovered_hdr.png"/>
+
+<p style="text-align:center;">
+(SDR images and the recovered HDR image tone-mapped to SDR)
+</p>
+
+#### Panoramic Transformation
+
+Next, we do some transformation to get an equirectangular environment map from the mirror ball 
+that can be used in rendering software.
+
+<img src="/assets/images/2021-06-06/equirect.png" width=600/>
+
+#### Rendering
+
+<img src="/assets/images/2021-06-06/rendered_image.png" width=600/>
+
+<p style="text-align:center;">
+(
+<a href="https://free3d.com/3d-model/tea-cup-947081.html">Tea Cup 3D Model</a>
+by sidhartho.
+<a href="https://free3d.com/3d-model/knight-13720.html">Knight 3D Model</a>
+by abitor.
+<a href="https://free3d.com/3d-model/lego-man-8986.html">Lego Man 3D Model</a>
+by dualityy.
+)
+</p>
+
+[Back to ToC](#toc)
 
 ### Final Project: GrabCut <a name="final-project:-grabcut"></a>
 
-(Todo)
+The final project I did was implementing GrabCut described in this
+[paper](https://www.microsoft.com/en-us/research/wp-content/uploads/2004/08/siggraph04-grabcut.pdf).
+GrabCut is an "interactive foreground extraction \[technique\] using iterated graph cuts".[2]
 
+The approach can be described as the following:
+
+_Initialization:_ To assign each pixel of the image to either the foreground or the background, we 
+first need the user to box out the foreground object. Then, we will use Gaussian mixtures to 
+model the color distribution of the foreground and the background. We will initialize the
+foreground Gaussian mixture using points inside of the box and the background Gaussian 
+mixture from points outside of the box. All points outside of the box are tied to the background. 
+Their assignment will not change.
+
+_Iterative Optimization:_
+1. Learn foreground and background Gaussian mixtures.
+2. Construct a graph where we have all points inside the box plus a source and a sink as vertices.
+    * All vertices that correspond to points in the image have edges to the source and the sink. 
+    * They also have edges connected to vertices corresponding to neighboring points in the image. 
+    * The edges connecting the source/sink and the point vertices have the log probability of
+    the point given the foreground/background Gaussian mixture as their capacity.
+    * The edges connecting vertices corresponding to neighboring points have a capacity that
+gets larger if the distance between the two neighboring points is small.
+Conceptually, we want to make the segmentation smooth, and we do not want to cut where the gradient is weak.
+3. Apply min-cut to the graph. Points reachable from the source are assigned to the 
+foreground. Other points are assigned to the background.
+4. Repeat from step 1 until convergence.
+
+_User Input:_ User can provide additional input (mark pixels red for foreground and blue for 
+background), and we will assign those points according to user input and repeat iterative 
+optimization. Points assigned according to user input will not change their assignment
+
+You can lean more about GrabCut from the [paper](https://www.microsoft.com/en-us/research/wp-content/uploads/2004/08/siggraph04-grabcut.pdf).
+
+#### GrabCut
+
+<div style="text-align:center">
+  <div style="display:inline-block;">
+    <img src="/assets/images/2021-06-06/grabcut_1.png" width=160/>
+  </div>
+  <div style="display:inline-block;">
+    <img src="/assets/images/2021-06-06/grabcut_1_result.png" width=160/>
+  </div>
+</div>
+
+#### GrabCut with User Input
+
+<div style="text-align:center">
+  <div style="display:inline-block;">
+    <img src="/assets/images/2021-06-06/grabcut_2.png" width=160/>
+  </div>
+  <div style="display:inline-block;">
+    <img src="/assets/images/2021-06-06/grabcut_2_naive_result.png" width=160/>
+  </div>
+</div>
+<div style="text-align:center">
+  <div style="display:inline-block;">
+    <img src="/assets/images/2021-06-06/grabcut_2_user_input.png" width=160/>
+  </div>
+  <div style="display:inline-block;">
+    <img src="/assets/images/2021-06-06/grabcut_2_user_input_result.png" width=160/>
+  </div>
+</div>
+
+[Back to ToC](#toc)
+
+That's all of the projects! Thanks a lot!
 
 * [1] [CS445 Spring 2021 Syllabus](https://courses.engr.illinois.edu/cs445/sp2021/cs445_syllabus_sp21.pdf)
+* [2] [“GrabCut” — Interactive Foreground Extraction using Iterated Graph Cuts](https://www.microsoft.com/en-us/research/wp-content/uploads/2004/08/siggraph04-grabcut.pdf)
 
